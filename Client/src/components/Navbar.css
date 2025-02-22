@@ -1,0 +1,32 @@
+/* Import this CSS file in your Navbar.jsx */
+.navbar {
+    transition: all 0.3s ease;
+}
+
+.navbar-collapse {
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding: 1rem;
+        margin-top: 0.5rem;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+}
+
+.nav-link:hover {
+    color: var(--bs-primary) !important;
+}
+
+.navbar .btn-link {
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.navbar .btn-link:hover {
+    color: var(--bs-primary) !important;
+}
