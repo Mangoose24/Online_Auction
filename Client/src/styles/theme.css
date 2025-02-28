@@ -494,4 +494,82 @@ html {
 .btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+.auction-detail {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.auction-info {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.bid-form {
+  margin: 2rem 0;
+}
+
+.bid-form input {
+  width: 200px;
+  padding: 0.5rem;
+  margin-right: 1rem;
+}
+
+.bid-history {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.bid-history ul {
+  list-style: none;
+  padding: 0;
+}
+
+.bid-history li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bid-history li:last-child {
+  border-bottom: none;
+}
+
+.error {
+  color: var(--primary-red);
+  margin: 1rem 0;
+}
+
+/* Add these to your existing styles */
+.winner-badge {
+  background-color: var(--primary-red);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 1rem;
+  font-size: 0.8rem;
+}
+
+.auction-info .btn {
+  margin-top: 1rem;
+}
+
+.auction-info .btn-outline {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+}
+
+.auction-info .btn-outline:hover {
+  background-color: var(--primary-red);
+  color: white;
+}
+
+.auction-info .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 } 

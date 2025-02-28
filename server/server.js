@@ -206,7 +206,7 @@ app.post("/api/auth/register", async (req, res) => {
     await user.save();
 
     req.session.user = {
-      id: user._id,
+      id: user._id.toString(),
       username: user.username,
       email: user.email,
       role: user.role,
@@ -229,7 +229,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     req.session.user = {
-      id: user._id,
+      id: user._id.toString(),
       username: user.username,
       email: user.email,
       role: user.role,
@@ -296,6 +296,131 @@ app.post("/api/auctions", auth, async (req, res) => {
     res.status(201).json(auction);
   } catch (error) {
     console.error("Error creating auction:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get single auction
+app.get("/api/auctions/:id", async (req, res) => {
+  try {
+    const auction = await Auction.findById(req.params.id)
+      .populate("creator", "username")
+      .populate("bids.bidder", "username");
+
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    res.json(auction);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Place bid
+app.post("/api/auctions/:id/bid", auth, async (req, res) => {
+  try {
+    const auction = await Auction.findById(req.params.id);
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    // Check if auction is still active
+    if (auction.status !== "active") {
+      return res.status(400).json({ message: "Auction has ended" });
+    }
+
+    // Check if auction end date has passed
+    if (new Date(auction.endDate) < new Date()) {
+      auction.status = "ended";
+      await auction.save();
+      return res.status(400).json({ message: "Auction has ended" });
+    }
+
+    const { amount } = req.body;
+    const bidAmount = parseFloat(amount);
+
+    // Validate bid amount
+    if (isNaN(bidAmount) || bidAmount <= 0) {
+      return res.status(400).json({ message: "Invalid bid amount" });
+    }
+
+    // Check if bid is higher than current bid
+    if (bidAmount <= auction.currentBid) {
+      return res.status(400).json({
+        message: `Bid must be higher than current bid: $${auction.currentBid}`,
+      });
+    }
+
+    // Check if user is not bidding on their own auction
+    if (auction.creator.toString() === req.session.user.id) {
+      return res.status(400).json({
+        message: "Cannot bid on your own auction",
+      });
+    }
+
+    // Add new bid
+    auction.bids.push({
+      bidder: req.session.user.id,
+      amount: bidAmount,
+    });
+    auction.currentBid = bidAmount;
+
+    await auction.save();
+    await auction.populate("bids.bidder", "username");
+
+    res.json(auction);
+  } catch (error) {
+    console.error("Error placing bid:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get auction bids
+app.get("/api/auctions/:id/bids", async (req, res) => {
+  try {
+    const auction = await Auction.findById(req.params.id)
+      .populate("bids.bidder", "username")
+      .select("bids currentBid");
+
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    res.json({
+      bids: auction.bids,
+      currentBid: auction.currentBid,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Close auction endpoint
+app.post("/api/auctions/:id/close", auth, async (req, res) => {
+  try {
+    const auction = await Auction.findById(req.params.id);
+
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    // Check if user is the auction creator
+    if (auction.creator.toString() !== req.session.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Only the auction creator can close this auction" });
+    }
+
+    // Update auction status
+    auction.status = "ended";
+    await auction.save();
+    await auction.populate("creator", "username");
+    await auction.populate("bids.bidder", "username");
+
+    res.json(auction);
+  } catch (error) {
+    console.error("Error closing auction:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

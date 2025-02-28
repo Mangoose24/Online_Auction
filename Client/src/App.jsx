@@ -6,6 +6,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import AuctionDashboard from './components/Dashboard'
 import AdminDashboard from './components/AdminDashboard'
+import AuctionDetail from './components/AuctionDetail'
 // Import our new theme
 import './styles/theme.css'
 import api from './utils/api'
@@ -52,6 +53,10 @@ const App = () => {
           <Route 
             path="/auction" 
             element={user ? <AuctionDashboard /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/auction/:id" 
+            element={<AuctionDetail user={user} />} 
           />
           <Route 
             path="/admin/dashboard" 

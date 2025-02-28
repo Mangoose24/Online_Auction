@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Table, Card } from "react-bootstrap";
 import api from '../utils/api';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const [auctions, setAuctions] = useState([]);
@@ -104,7 +105,9 @@ const Dashboard = () => {
                                 <p>Ends: {new Date(auction.endDate).toLocaleDateString()}</p>
                             </div>
                             <div className="auction-card-actions">
-                                <button className="btn">Place Bid</button>
+                                <Link to={`/auction/${auction._id}`} className="btn">
+                                    View Details
+                                </Link>
                             </div>
                         </div>
                     ))}
