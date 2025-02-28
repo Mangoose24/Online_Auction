@@ -1,86 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Table, Card } from "react-bootstrap";
+import api from '../utils/api';
 
-const AuctionDashboard = () => {
-    const [showModal, setShowModal] = useState(false);
-    const [auctions, setAuctions] = useState([
-        { id: 1, item: "Vintage Watch", bid: "$500", status: "Live" },
-        { id: 2, item: "Classic Car Model", bid: "$1200", status: "Upcoming" },
-        { id: 3, item: "Painting", bid: "$800", status: "Completed" },
-    ]);
+const Dashboard = () => {
+    const [auctions, setAuctions] = useState([]);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [newItem, setNewItem] = useState({
+        title: '',
+        description: '',
+        startingBid: '',
+        endDate: ''
+    });
 
-    const handleShow = () => setShowModal(true);
-    const handleClose = () => setShowModal(false);
+    useEffect(() => {
+        fetchAuctions();
+    }, []);
+
+    const fetchAuctions = async () => {
+        try {
+            setIsLoading(true);
+            const response = await api.get('/auctions');
+            setAuctions(response.data);
+        } catch (error) {
+            console.error('Error fetching auctions:', error);
+            setError('Failed to load auctions');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleAddItem = async (e) => {
+        e.preventDefault();
+        try {
+            const formattedItem = {
+                title: newItem.title.trim(),
+                description: newItem.description.trim(),
+                startingBid: parseFloat(newItem.startingBid),
+                endDate: new Date(newItem.endDate).toISOString()
+            };
+
+            console.log("Sending auction data:", formattedItem);
+
+            // Validate data before sending
+            if (!formattedItem.title || !formattedItem.description) {
+                setError('Title and description are required');
+                return;
+            }
+
+            if (isNaN(formattedItem.startingBid) || formattedItem.startingBid <= 0) {
+                setError('Starting bid must be a positive number');
+                return;
+            }
+
+            const response = await api.post('/auctions', formattedItem);
+            console.log("Server response:", response.data);
+
+            setAuctions(prevAuctions => [...prevAuctions, response.data]);
+            setShowAddModal(false);
+            setNewItem({
+                title: '',
+                description: '',
+                startingBid: '',
+                endDate: ''
+            });
+        } catch (error) {
+            console.error('Error adding item:', error.response?.data || error);
+            setError(
+                error.response?.data?.message || 
+                error.response?.data?.error || 
+                'Failed to add item'
+            );
+        }
+    };
 
     return (
-        <div className="container mt-4">
-            <h2 className="text-center mb-4">Auction Dashboard</h2>
-
-            {/* Add Auction Button */}
-            <div className="d-flex justify-content-end mb-3">
-                <Button variant="primary" onClick={handleShow}>Add Auction</Button>
+        <div className="auction-dashboard">
+            <div className="dashboard-header">
+                <h2>Active Auctions</h2>
+                <button 
+                    className="btn"
+                    onClick={() => setShowAddModal(true)}
+                >
+                    Add Item
+                </button>
             </div>
 
-            {/* Auction Table */}
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>S.No</th>
-                        <th>Item</th>
-                        <th>Current Bid</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {auctions.map((auction, index) => (
-                        <tr key={auction.id}>
-                            <td>{index + 1}</td>
-                            <td>{auction.item}</td>
-                            <td>{auction.bid}</td>
-                            <td>
-                                <span className={`badge bg-${auction.status === "Live" ? "success" : auction.status === "Upcoming" ? "warning" : "secondary"}`}>
-                                    {auction.status}
-                                </span>
-                            </td>
-                            <td>
-                                <Button variant="info" size="sm" className="me-2 mb-2">View</Button>
-                                <Button variant="danger" size="sm" className="mb-2 ">End Auction</Button>
-                            </td>
-                        </tr>
+            {isLoading ? (
+                <div className="loading-spinner">Loading...</div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : auctions.length === 0 ? (
+                <div className="no-auctions">No active auctions found.</div>
+            ) : (
+                <div className="auction-grid">
+                    {auctions.map(auction => (
+                        <div key={auction._id} className="card auction-card">
+                            <div className="auction-card-content">
+                                <h3>{auction.title}</h3>
+                                <p>{auction.description}</p>
+                                <p>Current Bid: ${auction.currentBid || auction.startingBid}</p>
+                                <p>Ends: {new Date(auction.endDate).toLocaleDateString()}</p>
+                            </div>
+                            <div className="auction-card-actions">
+                                <button className="btn">Place Bid</button>
+                            </div>
+                        </div>
                     ))}
-                </tbody>
-            </Table>
+                </div>
+            )}
 
-            {/* Add Auction Modal */}
-            <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add New Auction</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Item Name</Form.Label>
-                            <Form.Control type="text" placeholder="Enter item name" />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Starting Bid</Form.Label>
-                            <Form.Control type="number" placeholder="Enter starting bid" />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Status</Form.Label>
-                            <Form.Select>
-                                <option>Upcoming</option>
-                                <option>Live</option>
-                                <option>Completed</option>
-                            </Form.Select>
-                        </Form.Group>
-                        <Button variant="primary" type="submit">Add Auction</Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
+            {showAddModal && (
+                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <button 
+                            className="modal-close"
+                            onClick={() => setShowAddModal(false)}
+                        >
+                            ×
+                        </button>
+                        <h3 className="form-title">Add New Item</h3>
+                        <form onSubmit={handleAddItem}>
+                            <div className="form-group">
+                                <label>Title</label>
+                                <input
+                                    type="text"
+                                    value={newItem.title}
+                                    onChange={e => setNewItem({...newItem, title: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    value={newItem.description}
+                                    onChange={e => setNewItem({...newItem, description: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Starting Bid ($)</label>
+                                <input
+                                    type="number"
+                                    value={newItem.startingBid}
+                                    onChange={e => setNewItem({...newItem, startingBid: e.target.value})}
+                                    required
+                                    min="0"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>End Date</label>
+                                <input
+                                    type="datetime-local"
+                                    value={newItem.endDate}
+                                    onChange={e => setNewItem({...newItem, endDate: e.target.value})}
+                                    required
+                                    min={new Date().toISOString().slice(0, 16)}
+                                />
+                            </div>
+                            <div className="form-actions">
+                                <button 
+                                    type="button" 
+                                    className="btn btn-outline"
+                                    onClick={() => setShowAddModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn">
+                                    Add Item
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default AuctionDashboard;
+export default Dashboard;

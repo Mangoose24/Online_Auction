@@ -1,67 +1,112 @@
 import React, { useState } from 'react';
-import { Nav } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../utils/api';
 
-const Register = () => {
-    const [name, setName] = useState('');
-    const Navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const Register = ({ setUser }) => {
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: ''
+    });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
-    const handleRegister = async (e) => {
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+        setError(''); // Clear error when user types
+    };
+
+    const validateForm = () => {
+        if (!formData.username || formData.username.length < 3) {
+            setError('Username must be at least 3 characters long');
+            return false;
+        }
+        if (!formData.email || !formData.email.includes('@')) {
+            setError('Please enter a valid email address');
+            return false;
+        }
+        if (!formData.password || formData.password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        Navigate('/auction');
-        // Registration logic (commented out for now)
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+        try {
+            const response = await api.post('/auth/register', formData);
+            setUser(response.data.user);
+            navigate('/auction');
+        } catch (error) {
+            console.error('Registration error:', error);
+            setError(
+                error.response?.data?.message || 
+                'Registration failed. Please try again.'
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-80 bg-bg-var(--dark-bg)">
-            <div className="card p-4 rounded-4 shadow-lg" style={{ width: '350px' }}>
-                <h2 className="text-center text-primary fw-bold mb-3">Register</h2>
-                <form onSubmit={handleRegister}>
-                    <div className="mb-3 text-white">
-                        <label htmlFor="name" className="form-label">Username</label>
+        <div className="auth-container">
+            <div className="auth-card">
+                <h2>Register</h2>
+                {error && <div className="error-message">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="username">Username</label>
                         <input
                             type="text"
-                            className="form-control"
-                            id="name"
-                            placeholder="Enter your username"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            id="username"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
                             required
+                            minLength="3"
                         />
                     </div>
-                    <div className="mb-3 text-white">
-                        <label htmlFor="email" className="form-label">Email address</label>
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
                         <input
                             type="email"
-                            className="form-control"
                             id="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
-                    <div className="mb-3 text-white">
-                        <label htmlFor="password" className="form-label">Password</label>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
                         <input
                             type="password"
-                            className="form-control"
                             id="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
                             required
+                            minLength="6"
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary w-100" onClick={handleRegister}>Register</button>
+                    <button 
+                        type="submit" 
+                        className="btn" 
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Registering...' : 'Register'}
+                    </button>
                 </form>
-                {error && <p className="text-danger mt-3 text-center">{error}</p>}
-                <p className="text-center mt-3 text-white">
-                    Already have an account? <Link to="/login" className="text-primary mx-5">Login</Link>
+                <p className="auth-link">
+                    Already have an account? <Link to="/login">Login</Link>
                 </p>
             </div>
         </div>

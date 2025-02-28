@@ -1,54 +1,67 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../utils/api';
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const Login = ({ setUser }) => {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        // e.preventDefault();
-         try {
-            localStorage.setItem('user', JSON.stringify({ useremail: email}));
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await api.post('/auth/login', formData);
+            setUser(response.data.user);
             navigate('/auction');
         } catch (error) {
-             setError(error.response?.data?.message || 'An unexpected error occurred. Please try again.');
+            setError(error.response?.data?.message || 'Login failed');
         }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-90 bg-var(--dark-bg)">
-            <div className="card p-4 shadow-lg" style={{ width: '350px' }}>
-                <h2 className="text-center text-primary mb-4">Login</h2>
-                {error && <p className="alert alert-danger text-center">{error}</p>}
-                <form onSubmit={handleLogin}>
-                    <div className="mb-3">
-                        <label htmlFor="email" className="form-label fw-semibold text-white">Email address</label>
-                        <input 
-                            type="email" 
-                            className="form-control" 
-                            id="email" 
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)} 
-                            required 
+        <div className="auth-container">
+            <div className="auth-card">
+                <h2>Login</h2>
+                {error && <div className="error-message">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
                         />
                     </div>
-                    <div className="mb-3">
-                        <label htmlFor="password" className="form-label fw-semibold text-white">Password</label>
-                        <input 
-                            type="password" 
-                            className="form-control" 
-                            id="password" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary w-100">Login</button>
+                    <button type="submit" className="btn">
+                        Login
+                    </button>
                 </form>
-                <p className="text-center mt-3 text-white">
-                    Don't have an account? <a href="/register" className="text-primary fw-bold mx-4">Register</a>
+                <p className="auth-link">
+                    Don't have an account? <Link to="/register">Register</Link>
                 </p>
             </div>
         </div>
@@ -56,3 +69,4 @@ const Login = () => {
 };
 
 export default Login;
+

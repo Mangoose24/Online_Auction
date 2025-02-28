@@ -304,4 +304,194 @@ input:focus, select:focus, textarea:focus {
 /* Add smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+}
+
+/* Admin Dashboard Styles */
+.admin-dashboard {
+    padding: 2rem;
+}
+
+.dashboard-section {
+    margin-bottom: 2rem;
+}
+
+.dashboard-section h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-red);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin: 0 0.25rem;
+}
+
+/* User email in navbar */
+.user-email {
+    color: var(--gray-text);
+    margin: 0 1rem;
+}
+
+/* Mobile responsiveness for tables */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* Add these styles to your theme.css */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 2rem;
+}
+
+.auth-card {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--light-text);
+}
+
+.error-message {
+    color: var(--primary-red);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Add these to your existing theme.css */
+.auth-link {
+    margin-top: 1rem;
+    text-align: center;
+    color: var(--gray-text);
+}
+
+.auth-link a {
+    color: var(--primary-red);
+    text-decoration: none;
+    margin-left: 0.5rem;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--gray-text);
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+.modal-close:hover {
+    color: var(--primary-red);
+}
+
+/* Auction Dashboard Styles */
+.auction-dashboard {
+    padding: 2rem;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.auction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.auction-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.auction-card-content {
+    flex: 1;
+}
+
+.auction-card-actions {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+/* Form Styles */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-title {
+    margin-bottom: 2rem;
+    color: var(--primary-red);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Button variations */
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--primary-red);
+    color: var(--primary-red);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-red);
+    color: var(--light-text);
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 } 
